@@ -1,0 +1,83 @@
+@startuml
+skinparam sequenceParticipant underline
+hide footbox
+
+actor "Cliente" as Cliente
+boundary ":Interfaz Pago" as A
+control ":Controlador Pedido" as B
+entity ":Entidad Pedido" as C
+control ":Controlador Pago" as D
+entity ":Entidad Pago" as E
+boundary ":Interfaz Banco" as F
+actor "Sistema Gestión Pagos Banco" as SistemaBanco
+boundary ":Interfaz Efectivo" as G
+actor "Sistema Gestión Pagos Efectivo" as SistemaEfectivo
+
+activate Cliente
+activate SistemaBanco
+activate SistemaEfectivo
+Cliente -> A: 1:Realizar Pago
+activate A
+activate B
+A -> B: 1.1:Listar Pedidos
+B -> C: 2:Recuperar Pedidos
+activate C
+C --> B: 3:Pedidos
+deactivate C
+B -> A: 4:Mostrar Pedidos
+deactivate B
+
+loop varios pedidos
+Cliente -> A: 5:Seleccionar Pedido
+A -> B: 5.1:Recuperar Pedido
+activate B
+B -> C: 6:Recuperar Datos Perdidos
+activate C
+C --> B: 7: Datos Perdidos
+deactivate C
+B -> A: 8:mostrarDatosPedido
+deactivate B
+end
+
+Cliente -> A: 9:Confirmar Pedido
+activate B
+A -> B: 9.1:Solicitar Pago
+activate D
+B -> D: 9.1.1:Pago Pedido
+deactivate B
+D -> A: 9.1.1.1:Solicitar FormaPago
+Cliente -> A: 10:Seleccionar FormaPago
+Cliente -> A: 11:Introducir Datos
+A -> D: 11.1:Confirma Datos
+
+alt tarjeta
+D -> F: 11.1.1:Confirma Datos Bancarios
+activate F
+F -> SistemaBanco: 11.1.1.1:Confirmar Datos
+SistemaBanco --> F: 11.1.1.2:Datos Correctos
+F -> D: 11.1.1.3:Pago Pedido
+deactivate F
+D -> F: 11.1.1.3.1:Realizar Pago
+activate F
+F -> SistemaBanco: 11.1.1.3.1.1:Realizar Pago
+deactivate F
+else efectivo 
+D -> G: 11.1.1:Confirma Efectivo
+activate G
+G -> SistemaEfectivo: 11.1.1.1:Confirmar Efectivo
+SistemaEfectivo --> G: 11.1.1.2:Datos Correctos
+G -> D: 11.1.1.3:Pago Pedido
+deactivate G
+D -> G: 11.1.1.3.1:Realizar Pago
+activate G
+G -> SistemaEfectivo: 11.1.1.3.1.1:Realizar Pago
+deactivate G
+end 
+
+D -> E: 11.1.1.3.2:Registra Pago
+deactivate D
+activate E
+E -> A: 11.1.1.3.2.1:Confirmar Pago
+deactivate E
+deactivate A
+@enduml
